@@ -1,5 +1,13 @@
 'use strict';
 
+const templates = {
+  articleLink: Handlebars.compile(document.querySelector('#template-article-link').innerHTML),
+  articleTagLink: Handlebars.compile(document.querySelector('#template-article-tag-link').innerHTML),
+  authorLink: Handlebars.compile(document.querySelector('#template-author-link').innerHTML),
+  tagCloudLink: Handlebars.compile(document.querySelector('#template-tag-cloud-link').innerHTML),
+  authorCludLink: Handlebars.compile(document.querySelector('#template-author-cloud-link').innerHTML)
+};
+
 function titleClickHandler(event){
   const clickedElement = this;
   event.preventDefault();
@@ -37,7 +45,8 @@ function generateTitleLinks(customSelector = '') {
       /* [DONE] find the title element */
       const articleTitle = article.querySelector(optTitleSelector).innerHTML;
       /* [DONE] create HTML of the link */
-      const linkHTML = '<li><a href="#' + articleId + '"><span>' + articleTitle + '</span></a></li>';
+      const linkHTMLData = {id: articleId, title: articleTitle};
+      const linkHTML = templates.articleLink(linkHTMLData);
       /* [DONE] insert link into titleList */
       titleList.insertAdjacentHTML("afterbegin", linkHTML);
     }
@@ -69,7 +78,6 @@ function calculateTagClass (count, params) {
   const normalizedMax = params.max - params.min;
   const percentage = normalizedCount / normalizedMax;
   const classNumber = Math.floor( percentage * (optCloudClassCount - 1) + 1 );
-  console.log('classNumber');
   return optCloudClassPrefix + classNumber;
 }
 
@@ -91,7 +99,7 @@ function generateTags() {
     /* [DONE] START LOOP: for each tag */
     for (let tag of articleTagsArray) {
       /* [DONE] generate HTML of the link */
-      let linkHTML = '<li><a href="#tag-' + tag + '">' + tag + '</a></li> ';
+      const linkHTML = templates.articleTagLink({ tag: tag });
       /* [DONE] add generated code to html variable */
       html = html + linkHTML;
       /* [DONE] END LOOP: for each tag */
@@ -109,8 +117,7 @@ function generateTags() {
   /* [DONE] find list of tags in right column */
   const tagList = document.querySelector(optTagsListSelector);
   const tagsParams = calculateTagsParams(allTags);
-  console.log('tagsParams:', tagsParams);
-  let allTagsHTML ='';
+  let allTagsHTML = '';
   for (let tag in allTags) {
     const tagLinkHTML = '<li class="' + calculateTagClass(allTags[tag], tagsParams) + '">' + tag + ' (' + allTags[tag] + ')' + '</li>';
     allTagsHTML += tagLinkHTML;
@@ -181,16 +188,18 @@ function authorClickHandler (event) {
   event.preventDefault();
   const clickedElement = this;
   const href = clickedElement.getAttribute('href');
+  console.log(href);
   const author = href.replace('#-au', '');
+  console.log(author);
   let allAuthors = document.querySelectorAll('a.active[href^="#-au"]');
-  for (let author of allAuthors) {
-    author.classList.remove('active');
+  for (let author_1 of allAuthors) {
+    author_1.classList.remove('active');
   }
   const allAuthHref = document.querySelectorAll('a[href="' + href + '"]');
   for (let one of allAuthHref) {
     one.classList.add('active');
   }
-  generateTitleLinks('[data-author="' + one + '"]');
+  generateTitleLinks('[data-author="' + href + '"]');
 }
 
 function addClickListenersToAuthors () {
